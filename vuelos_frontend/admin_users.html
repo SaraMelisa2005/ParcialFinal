@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin - Usuarios</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Usuarios (Admin)</h2>
+      <div class="topbar">
+        <span id="welcome"></span>
+        <button class="btn ghost" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Crear usuario</h3>
+      <div class="form-row">
+        <input id="new_name" placeholder="Nombre">
+        <input id="new_email" placeholder="Email">
+        <input id="new_password" placeholder="Contraseña">
+        <select id="new_role">
+          <option value="gestor">Gestor</option>
+          <option value="administrador">Administrador</option>
+        </select>
+        <button class="btn primary" id="btnCreate">Crear</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Lista de usuarios</h3>
+      <table class="table" id="usersTable">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin_users.js"></script>
+</body>
+</html>

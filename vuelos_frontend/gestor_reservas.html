@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Gestor - Reservas</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Reservas (Gestor)</h2>
+      <div class="topbar">
+        <span id="welcome"></span>
+        <button class="btn ghost" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Crear reserva</h3>
+      <div class="form-row">
+        <select id="select_flight"></select>
+        <button class="btn primary" id="btnCreateReservation">Reservar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Mis Reservas</h3>
+      <table class="table" id="reservasTable">
+        <thead><tr><th>ID</th><th>Vuelo</th><th>Estado</th><th>Reservado</th><th>Acciones</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/gestor_reservas.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin - Vuelos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Vuelos (Admin)</h2>
+      <div class="topbar">
+        <span id="welcome"></span>
+        <button class="btn ghost" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Crear/Editar vuelo</h3>
+      <div class="form-row">
+        <input id="flight_id" type="hidden">
+        <select id="nave_select"></select>
+        <input id="origin" placeholder="Origen">
+        <input id="destination" placeholder="Destino">
+        <input id="departure" type="datetime-local">
+        <input id="arrival" type="datetime-local">
+        <input id="price" placeholder="Precio" type="number">
+        <button class="btn primary" id="btnSaveFlight">Guardar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Buscar vuelos</h3>
+      <div class="form-row">
+        <input id="q_origin" placeholder="Origen">
+        <input id="q_destination" placeholder="Destino">
+        <input id="q_date" type="date">
+        <button class="btn" id="btnSearch">Buscar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Lista de vuelos</h3>
+      <table class="table" id="flightsTable">
+        <thead><tr><th>ID</th><th>Nave</th><th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Precio</th><th>Acciones</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin_flights.js"></script>
+</body>
+</html>
