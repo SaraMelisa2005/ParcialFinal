@@ -9,8 +9,7 @@
 <body>
   <div class="container">
     <header class="header card">
-      <h1>Vuelos App</h1>
-      <p class="small">Microservicios: usuarios (auth), vuelos y reservas. Frontend simple HTML/CSS/JS.</p>
+      <h1>Sistema de Gestión de Vuelos</h1>
       <div class="topbar">
         <button class="btn ghost" id="btnLogin">Iniciar sesión</button>
         <button class="btn" id="btnAdminUsers">Admin — Usuarios</button>
@@ -22,11 +21,7 @@
     <main>
       <section class="card">
         <h2>Bienvenido</h2>
-        <p>Usa el botón <strong>Iniciar sesión</strong> para acceder. Si ya iniciaste sesión, serás redirigido automáticamente según tu rol.</p>
-        <div class="notice small">
-          Usuario de prueba (si los seed están activos): <br>
-          <strong>admin@system.com</strong> / <strong>admin123</strong>
-        </div>
+        <p>Usa el botón <strong>Iniciar sesión</strong> para acceder.</p>
       </section>
 
       <section class="card">
@@ -48,41 +43,12 @@
     </main>
 
     <footer class="card small">
-      <div>Desarrollado con Slim + Eloquent + JWT · Frontend estático</div>
+      <div>&copy; 2025 - Sistema de Gestión de Vuelos</div>
     </footer>
   </div>
 
 <script src="js/api.js"></script>
 <script src="js/auth.js"></script>
-<script>
-  // redirección automática si ya hay sesión
-  (function(){
-    const token = localStorage.getItem('jwt_token');
-    const role = localStorage.getItem('user_role');
-
-    // si hay token y rol, redirigir al panel correspondiente
-    if (token && role) {
-      if (role === 'administrador') {
-        window.location.href = 'admin_users.html';
-        return;
-      }
-      if (role === 'gestor') {
-        window.location.href = 'gestor_reservas.html';
-        return;
-      }
-    }
-
-    // botones
-    document.getElementById('btnLogin').addEventListener('click', ()=> location.href = 'login.html');
-    document.getElementById('btnAdminUsers').addEventListener('click', ()=> location.href = 'admin_users.html');
-    document.getElementById('btnAdminFlights').addEventListener('click', ()=> location.href = 'admin_flights.html');
-    document.getElementById('btnGestor').addEventListener('click', ()=> location.href = 'gestor_reservas.html');
-
-    // atajos
-    document.getElementById('gotoAdminUsers').addEventListener('click', ()=> location.href = 'admin_users.html');
-    document.getElementById('gotoAdminFlights').addEventListener('click', ()=> location.href = 'admin_flights.html');
-    document.getElementById('gotoGestor').addEventListener('click', ()=> location.href = 'gestor_reservas.html');
-  })();
-</script>
+<script src="js/index.js"></script>
 </body>
 </html>

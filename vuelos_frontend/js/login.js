@@ -1,25 +1,22 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("form-login");
-    const btn = document.getElementById("btn-login");
+import { saveUser } from './js/local-storage.js';
 
-    form.addEventListener("submit", function (e) {
-        const user = document.getElementById("username").value.trim();
-        const pass = document.getElementById("password").value.trim();
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('usuario').value;
+  const password = document.getElementById('password').value;
 
-        if (user === "") {
-            alert("Debe ingresar el nombre de usuario");
-            e.preventDefault();
-            return false;
-        }
+  const res = await fetch('http://127.0.0.1:8000/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ usuario: username, password }),
+  });
 
-        if (pass === "") {
-            alert("Debe ingresar la contraseña");
-            e.preventDefault();
-            return false;
-        }
+  const data = await res.json();
 
-        // Evita doble envío
-        btn.disabled = true;
-        btn.textContent = "Ingresando...";
-    });
+  if (data.success === true) {
+    saveUser(data.user); // <--- IMPORTANTE
+    window.location.href = "home.html"; // asegúrate que existe
+  } else {
+    alert('Credenciales incorrectas');
+  }
 });

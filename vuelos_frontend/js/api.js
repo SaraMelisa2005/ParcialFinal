@@ -46,7 +46,7 @@ const API = {
 
         return headers;
     },
-    /**
+/**
      * Método genérico de llamada
      */
     async request(method, url, data = null, base = "") {
@@ -90,7 +90,6 @@ const API = {
     get(url, base) {
         return this.request("GET", url, null, base);
     },
-
     post(url, data, base) {
         return this.request("POST", url, data, base);
     },
@@ -103,3 +102,4 @@ const API = {
         return this.request("DELETE", url, null, base);
     }
 };
+    

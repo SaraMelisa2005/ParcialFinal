@@ -10,18 +10,14 @@ use Firebase\JWT\Key;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
-
 // Cargar .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
 $app = AppFactory::create();
 //$app->setBasePath('/vuelos_users_ms/public');
-
-$app->addRoutingMiddleware();
+$app->addBodyParsingMiddleware();
+//$app->addRoutingMiddleware();
 $errorMiddleware = $app->addErrorMiddleware((bool)($_ENV['APP_DEBUG'] ?? true), true, true);
 
 // Eloquent
@@ -42,21 +38,35 @@ $capsule->bootEloquent();
 // TEST conexión DB
 try {
     Capsule::connection()->getPdo();
-    echo "Conexión a base de datos exitosa";
+    //echo "Conexión a base de datos exitosa";
 } catch (\Exception $e) {
     echo "Error en conexión a base de datos: " . $e->getMessage();
     exit;  // Detener ejecución para que veas el error
 }
-
 $app->add(function ($request, $handler) {
     $origin = $request->getHeaderLine('Origin') ?: '*';
     $allowedOrigins = [
-        'http://localhost:5500', // Puerto donde sirves el frontend
+        'http://localhost:5500',
         'http://127.0.0.1:5500'
     ];
 
+    // Manejo de preflight OPTIONS
+    if ($request->getMethod() === 'OPTIONS') {
+        $response = new \Slim\Psr7\Response();
+        if (in_array($origin, $allowedOrigins)) {
+            return $response
+                ->withHeader('Access-Control-Allow-Origin', $origin)
+                ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+                ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                ->withHeader('Access-Control-Allow-Credentials', 'true')
+                ->withStatus(200);
+        }
+        return $response->withStatus(403);
+    }
+
+    $response = $handler->handle($request);
+
     if (in_array($origin, $allowedOrigins)) {
-        $response = $handler->handle($request);
         return $response
             ->withHeader('Access-Control-Allow-Origin', $origin)
             ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
@@ -64,31 +74,12 @@ $app->add(function ($request, $handler) {
             ->withHeader('Access-Control-Allow-Credentials', 'true');
     }
 
-    // Si no está en allowedOrigins, no permitir (opcional)
-    $response = $handler->handle($request);
     return $response;
 });
 
-$app->options('/{routes:.+}', fn($req, $res) => $res);
-
-
-// CORS middleware
-$app->add(function (Request $request, $handler) {
-    $origin = $request->getHeaderLine('Origin') ?: '*';
-    $response = $handler->handle($request);
-    $response = $response
-        ->withHeader('Access-Control-Allow-Origin', $origin)
-        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Credentials', 'true');
-
-    if ($request->getMethod() === 'OPTIONS') {
-        return $response->withStatus(200);
-    }
-
+$app->options('/{routes:.+}', function ($request, $response) {
     return $response;
 });
-
 // ---------------------- MIDDLEWARE JWT GLOBAL ----------------------
 // Este middleware valida JWT en Authorization: Bearer <token>
 // Rutas públicas: /login y /register (puedes modificar)
@@ -153,7 +144,6 @@ $sendJson = function(Response $res, $payload, $status = 200) {
     $res->getBody()->write(json_encode($payload));
     return $res->withHeader('Content-Type','application/json')->withStatus($status);
 };
-
 // Register (público) - ahora guarda password hasheada
 $app->post('/register', function (Request $request, Response $response) use ($sendJson) {
     $data = (array)$request->getParsedBody();
@@ -185,20 +175,20 @@ $app->post('/login', function (Request $request, Response $response) use ($sendJ
 
     $user = App\Models\User::where('email', $email)->first();
     if (!$user) {
-        return $sendJson($response, ['error' => 'usuario inválidas'], 401);
+        return $sendJson($response, ['error' => 'Usuario no encontrado'], 401);
     }
 
     // verificar hash
     $passwordOk = password_verify($password, $user->password);
     if (!$passwordOk) {
-        return $sendJson($response, ['error' => 'Contraseña inválidas'], 401);
+        return $sendJson($response, ['error' => 'Contraseña invalida'], 401);
     }
 
     $now = time();
     $expire = $now + (int)($_ENV['JWT_EXPIRE_SECONDS'] ?? 3600);
     $payload = [
-        'iss' => $_ENV['APP_URL'] ?? 'http://localhost',
-        'aud' => $_ENV['APP_URL'] ?? 'http://localhost',
+        'iss' => $_ENV['APP_URL'] ?? 'http://127.0.0.1',
+        'aud' => $_ENV['APP_URL'] ?? 'http://127.0.0.1',
         'iat' => $now,
         'exp' => $expire,
         'sub' => $user->id,
@@ -216,11 +206,11 @@ $app->post('/login', function (Request $request, Response $response) use ($sendJ
         'user' => $user->only(['id','name','email','role'])
     ]);
 });
-
 // Logout (stateless)
 $app->post('/logout', function (Request $request, Response $response) use ($sendJson) {
     return $sendJson($response, ['ok' => true, 'note' => 'Elimina el token en el cliente. Para invalidar en servidor usa blacklist.']);
 });
+
 // LISTAR USUARIOS (PROTEGIDO - solo administradores)
 $app->get('/users', function (Request $request, Response $response) use ($sendJson) {
     /** @var App\Models\User $authUser */
