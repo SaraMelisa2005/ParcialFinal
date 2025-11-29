@@ -1,4 +1,4 @@
-// admin_flights.js
+
 ensureAuth();
 document.getElementById('welcome').textContent = "Bienvenido, " + (localStorage.getItem('user_name') || '');
 
@@ -44,7 +44,7 @@ function attachFlightEvents() {
     b.onclick = async ()=> {
       const id = b.dataset.id;
       if (b.dataset.action === 'edit') {
-        // cargar datos
+        
         const res = await API.get('/vuelos', API.flightsBase);
         const list = await res.json();
         const f = list.find(x=>x.id==id);
@@ -83,7 +83,7 @@ document.getElementById('btnSaveFlight').addEventListener('click', async () => {
     const res = await API.post('/vuelos', data, API.flightsBase);
     if (!res.ok) { alert('Error creando'); return; }
   }
-  // limpiar y recargar
+  
   document.getElementById('flight_id').value='';
   await loadFlights();
 });
@@ -96,6 +96,6 @@ document.getElementById('btnSearch').addEventListener('click', async ()=>{
   await loadFlights(params);
 });
 
-// init
+
 loadNaves();
 loadFlights();

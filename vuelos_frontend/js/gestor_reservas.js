@@ -1,4 +1,4 @@
-// gestor_reservas.js
+
 ensureAuth();
 document.getElementById('welcome').textContent = "Bienvenido, " + (localStorage.getItem('user_name') || '');
 

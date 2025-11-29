@@ -1,4 +1,9 @@
-// Validar sesión
+import { getToken, getUser } from './local-storage.js';
+import * as API from './api.js';
+
+if (!getToken())
+  window.location.href = 'login.html';
+
 const user = getUser();
 if (!user) window.location.href = "login.html";
 

@@ -10,13 +10,13 @@ use App\Models\Nave;
 use App\Models\Reservation;
 use App\Models\User;
 
-// ---- JWT ----
+
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Cargar .env
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
@@ -26,7 +26,7 @@ $app->setBasePath('/vuelos_flights_ms/public');
 $app->addRoutingMiddleware();
 $errorMiddleware = $app->addErrorMiddleware((bool)($_ENV['APP_DEBUG'] ?? true), true, true);
 
-// Eloquent
+
 $capsule = new Capsule;
 $capsule->addConnection([
     'driver'    => $_ENV['DB_DRIVER'] ?? 'mysql',
@@ -44,7 +44,7 @@ $capsule->bootEloquent();
 $app->add(function ($request, $handler) {
     $origin = $request->getHeaderLine('Origin') ?: '*';
     $allowedOrigins = [
-        'http://localhost:5500', // Puerto donde sirves el frontend
+        'http://localhost:5500', 
         'http://127.0.0.1:5500'
     ];
 
@@ -57,12 +57,12 @@ $app->add(function ($request, $handler) {
             ->withHeader('Access-Control-Allow-Credentials', 'true');
     }
 
-    // Si no está en allowedOrigins, no permitir (opcional)
+    
     $response = $handler->handle($request);
     return $response;
 });
 
-// CORS
+
 $app->options('/{routes:.+}', fn($req, $res) => $res);
 $app->add(function (Request $request, $handler) {
     $origin = $request->getHeaderLine('Origin') ?: '*';
@@ -77,14 +77,12 @@ $app->add(function (Request $request, $handler) {
     }
     return $response;
 });
-// ----------------------------------------------
-// 🔐 MIDDLEWARE AUTH: JWT + TOKEN BD (compatibles)
-// ----------------------------------------------
+
 $app->add(function (Request $request, $handler) {
     $routeContext = \Slim\Routing\RouteContext::fromRequest($request);
     $route = $routeContext->getRoute();
 
-    // Rutas públicas
+    
     $publicPaths = ['/public', '/health'];
     $path = $request->getUri()->getPath();
     foreach ($publicPaths as $p) {
@@ -101,12 +99,12 @@ $app->add(function (Request $request, $handler) {
 
     $token = $matches[1];
 
-    // 1️⃣ Intentar validar JWT
+   
     try {
         $secret = $_ENV['JWT_SECRET'] ?? 'secret123';
         $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-        // Cargar usuario desde claims del JWT
+       
         $user = User::find($decoded->sub ?? 0);
         if (!$user) {
             return self::unauthorized("Usuario no existe");
@@ -116,10 +114,10 @@ $app->add(function (Request $request, $handler) {
         return $handler->handle($request);
 
     } catch (\Throwable $e) {
-        // Si JWT falla, continúa con token en BD
+        
     }
 
-    // 2️⃣ Token en tabla users (mecanismo anterior)
+    
     $user = User::where('token', $token)->first();
     if (!$user) {
         return self::unauthorized("Token inválido o expirado");
@@ -129,21 +127,20 @@ $app->add(function (Request $request, $handler) {
     return $handler->handle($request);
 });
 
-// helper
+
 function unauthorized(string $msg = "No autorizado") {
     $res = new \Slim\Psr7\Response();
     $res->getBody()->write(json_encode(['error' => $msg]));
     return $res->withStatus(401)->withHeader('Content-Type','application/json');
 }
 
-// ------------------ RUTAS ------------------
-// Health
+
 $app->get('/', function (Request $req, Response $res) {
     $res->getBody()->write('Flights microservice OK');
     return $res;
 });
 
-// Naves: CRUD (admin only)
+
 $app->post('/naves', function (Request $req, Response $res) {
     $user = $req->getAttribute('user');
     if ($user->role !== 'administrador') {
@@ -157,9 +154,7 @@ $app->post('/naves', function (Request $req, Response $res) {
     return $res->withHeader('Content-Type','application/json');
 });
 
-// ⚡️ TODA LA PARTE DE TUS RUTAS SIGUE INTACTA ⚡️
-// NO MODIFIQUÉ NADA EN ESTE BLOQUE
-// ---------------- TU CÓDIGO ORIGINAL ----------------
+
 
 $app->get('/naves', function (Request $req, Response $res) {
     $naves = App\Models\Nave::all();
@@ -186,7 +181,7 @@ $app->delete('/naves/{id}', function (Request $req, Response $res, $args) {
     return $res->withStatus(204);
 });
 
-// ---------------- VUELOS ----------------
+
 $app->post('/vuelos', function (Request $req, Response $res) {
     $user = $req->getAttribute('user');
     if ($user->role !== 'administrador') return $res->withStatus(403);
@@ -235,7 +230,7 @@ $app->delete('/vuelos/{id}', function (Request $req, Response $res, $args) {
     return $res->withStatus(204);
 });
 
-// Reservas
+
 $app->post('/reservas', function (Request $req, Response $res) {
     $user = $req->getAttribute('user');
     if ($user->role !== 'gestor') return $res->withStatus(403);

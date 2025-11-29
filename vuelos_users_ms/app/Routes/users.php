@@ -13,7 +13,7 @@ $app->post('/login', function ($request, $response) {
         return $response->withStatus(401)->withJson(['error' => 'Credenciales incorrectas']);
     }
 
-    // token simple (puedes mejorarlo luego)
+    
     $token = base64_encode(random_bytes(24));
 
     return $response->withJson([

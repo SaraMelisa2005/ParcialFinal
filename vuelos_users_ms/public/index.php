@@ -10,17 +10,17 @@ use Firebase\JWT\Key;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Cargar .env
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
 $app = AppFactory::create();
-//$app->setBasePath('/vuelos_users_ms/public');
+
 $app->addBodyParsingMiddleware();
-//$app->addRoutingMiddleware();
+
 $errorMiddleware = $app->addErrorMiddleware((bool)($_ENV['APP_DEBUG'] ?? true), true, true);
 
-// Eloquent
+
 $capsule = new Capsule;
 $capsule->addConnection([
     'driver'    => $_ENV['DB_DRIVER'] ?? 'mysql',
@@ -35,13 +35,13 @@ $capsule->addConnection([
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
-// TEST conexión DB
+
 try {
     Capsule::connection()->getPdo();
-    //echo "Conexión a base de datos exitosa";
+    
 } catch (\Exception $e) {
     echo "Error en conexión a base de datos: " . $e->getMessage();
-    exit;  // Detener ejecución para que veas el error
+    exit;  
 }
 $app->add(function ($request, $handler) {
     $origin = $request->getHeaderLine('Origin') ?: '*';
@@ -50,7 +50,7 @@ $app->add(function ($request, $handler) {
         'http://127.0.0.1:5500'
     ];
 
-    // Manejo de preflight OPTIONS
+  
     if ($request->getMethod() === 'OPTIONS') {
         $response = new \Slim\Psr7\Response();
         if (in_array($origin, $allowedOrigins)) {
@@ -80,13 +80,11 @@ $app->add(function ($request, $handler) {
 $app->options('/{routes:.+}', function ($request, $response) {
     return $response;
 });
-// ---------------------- MIDDLEWARE JWT GLOBAL ----------------------
-// Este middleware valida JWT en Authorization: Bearer <token>
-// Rutas públicas: /login y /register (puedes modificar)
+
 $app->add(function (Request $request, $handler) {
     $path = $request->getUri()->getPath();
 
-    // rutas públicas
+    
     $publicPaths = ['/login', '/register', '/'];
     foreach ($publicPaths as $p) {
         if ($p === $path || (stripos($path, $p) !== false && $p !== '/')) {
@@ -132,19 +130,18 @@ $app->add(function (Request $request, $handler) {
     }
 });
 
-// ---------------------- RUTAS ----------------------
-// Ruta base
+
 $app->get('/', function (Request $request, Response $response) {
     $response->getBody()->write('Users microservice (JWT) OK');
     return $response;
 });
 
-// Util - respuesta JSON
+
 $sendJson = function(Response $res, $payload, $status = 200) {
     $res->getBody()->write(json_encode($payload));
     return $res->withHeader('Content-Type','application/json')->withStatus($status);
 };
-// Register (público) - ahora guarda password hasheada
+
 $app->post('/register', function (Request $request, Response $response) use ($sendJson) {
     $data = (array)$request->getParsedBody();
 
@@ -152,7 +149,7 @@ $app->post('/register', function (Request $request, Response $response) use ($se
         return $sendJson($response, ['error' => 'Campos incompletos'], 400);
     }
 
-    // verificar email único
+    
     if (App\Models\User::where('email', $data['email'])->exists()) {
         return $sendJson($response, ['error' => 'Email ya registrado'], 400);
     }
@@ -167,7 +164,7 @@ $app->post('/register', function (Request $request, Response $response) use ($se
     return $sendJson($response, $user->only(['id','name','email','role']), 201);
 });
 
-// Login -> genera JWT
+
 $app->post('/login', function (Request $request, Response $response) use ($sendJson) {
     $data = (array)$request->getParsedBody();
     $email = $data['email'] ?? '';
@@ -178,7 +175,7 @@ $app->post('/login', function (Request $request, Response $response) use ($sendJ
         return $sendJson($response, ['error' => 'Usuario no encontrado'], 401);
     }
 
-    // verificar hash
+    
     $passwordOk = password_verify($password, $user->password);
     if (!$passwordOk) {
         return $sendJson($response, ['error' => 'Contraseña invalida'], 401);
@@ -206,12 +203,12 @@ $app->post('/login', function (Request $request, Response $response) use ($sendJ
         'user' => $user->only(['id','name','email','role'])
     ]);
 });
-// Logout (stateless)
+
 $app->post('/logout', function (Request $request, Response $response) use ($sendJson) {
     return $sendJson($response, ['ok' => true, 'note' => 'Elimina el token en el cliente. Para invalidar en servidor usa blacklist.']);
 });
 
-// LISTAR USUARIOS (PROTEGIDO - solo administradores)
+
 $app->get('/users', function (Request $request, Response $response) use ($sendJson) {
     /** @var App\Models\User $authUser */
     $authUser = $request->getAttribute('user');
@@ -224,7 +221,7 @@ $app->get('/users', function (Request $request, Response $response) use ($sendJs
     return $sendJson($response, $users);
 });
 
-// ACTUALIZAR USUARIO (PROTEGIDO - solo administradores)
+
 $app->put('/users/{id}', function (Request $request, Response $response, array $args) use ($sendJson) {
     $authUser = $request->getAttribute('user');
     if (!$authUser || $authUser->role !== 'administrador') {
@@ -239,7 +236,7 @@ $app->put('/users/{id}', function (Request $request, Response $response, array $
         return $sendJson($response, ['error' => 'Usuario no encontrado'], 404);
     }
 
-    // solo permitimos actualizar nombre y rol por ahora
+    
     $user->name = $data['name'] ?? $user->name;
     $user->role = $data['role'] ?? $user->role;
     $user->save();

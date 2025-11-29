@@ -14,8 +14,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const data = await res.json();
 
   if (data.success === true) {
-    saveUser(data.user); // <--- IMPORTANTE
-    window.location.href = "home.html"; // asegúrate que existe
+    saveUser(data.user); 
+    window.location.href = "home.html"; 
   } else {
     alert('Credenciales incorrectas');
   }

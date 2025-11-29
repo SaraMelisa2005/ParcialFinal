@@ -1,6 +1,7 @@
-// auth.js
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('loginForm');
+  if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -22,11 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // guardar token
-      localStorage.setItem('token', data.token);
+      
+      localStorage.setItem('jwt_token', data.token);
 
-      //alert('Login exitoso');
-      window.location = 'home.html'; // o la ruta que quieras
+     
+      window.location = 'home.html';
 
     } catch (err) {
       alert('Error de conexión con el servidor');
@@ -35,11 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// helper to ensure auth
+
 function ensureAuth(redirectTo='login.html') {
   const t = localStorage.getItem('jwt_token');
   if (!t) location.href = redirectTo;
 }
+
 function logout() {
   localStorage.removeItem('jwt_token');
   localStorage.removeItem('user_role');
